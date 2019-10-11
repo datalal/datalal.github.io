@@ -71,7 +71,7 @@ class App extends React.Component {
 
     this.modelParams = {
       flipHorizontal: true,   // flip e.g for video  
-      maxNumBoxes: 2,        // maximum number of boxes to detect
+      maxNumBoxes: 1,        // maximum number of boxes to detect
       iouThreshold: 0.5,      // ioU threshold for non-max suppression
       scoreThreshold: this.state.confidenceRange,    // confidence threshold for predictions.
     }
@@ -218,45 +218,62 @@ class App extends React.Component {
       this.model.detect(video).then(predictions => {
           // console.log("Predictions: ", predictions);
           this.model.renderPredictions(predictions, canvas, context, video);
-          if (predictions[0]) {
+          if ((this.state.send_box_1_x) && predictions[0]) {
         
             let box1midvalX = predictions[0].bbox[0] + (predictions[0].bbox[2] / 2)
-            let box1midvalY = predictions[0].bbox[1] + (predictions[0].bbox[3] / 2)
-            let box1size = predictions[0].bbox[2] * predictions[0].bbox[3]
             let box1_x_raw = box1midvalX.toFixed()
-            let box1_y_raw = box1midvalY.toFixed()
-            let box1_area_raw = box1midvalX.toFixed()
             let box1Xpos = document.body.clientWidth * (box1midvalX / video.width)
-            let box1Ypos = document.body.clientHeight * (box1midvalY / video.height)
-            
             const box_1_x = (box1Xpos / this.state.box_1_x_att).toFixed()
-            const box_1_y = (box1Ypos /  this.state.box_1_y_att).toFixed()
-            const box_1_area = (box1size /  this.state.box_1_area_att).toFixed()
-
             const box_1_x_val = box_1_x > 127 ? 127 : box_1_x
-            const box_1_y_val = box_1_y > 127 ? 127 : box_1_y
-            const box_1_area_val = box_1_area > 127 ? 127 : box_1_area
-
-
 
             this.setState({
               box_1_x: box_1_x_val,
-              box_1_y: box_1_y_val,
-              box_1_area: box_1_area_val,
-              box_1_y_val: box1_y_raw,
               box_1_x_val: box1_x_raw,
-              box_1_area_val: box1_area_raw,
             })
 
             if (this.midiOutput && this.state.send_box_1_x) {
               // console.log('box_1_x: ', box_1_x_val)
               this.midiOutput.sendControlChange(1, box_1_x_val, "all");
             }
+          }
+
+          if ((this.state.send_box_1_y) && predictions[0]) {
+        
+            let box1midvalY = predictions[0].bbox[1] + (predictions[0].bbox[3] / 2)
+            let box1_y_raw = box1midvalY.toFixed()
+            let box1Ypos = document.body.clientHeight * (box1midvalY / video.height)
+            
+            const box_1_y = (box1Ypos /  this.state.box_1_y_att).toFixed()
+
+            const box_1_y_val = box_1_y > 127 ? 127 : box_1_y
+
+
+
+            this.setState({
+              box_1_y: box_1_y_val,
+              box_1_y_val: box1_y_raw,
+            })
 
             if (this.midiOutput && this.state.send_box_1_y) {
               // console.log('box_1_y: ', box_1_y_val)
               this.midiOutput.sendControlChange(2,box_1_y_val, "all");
             }
+          }
+
+          if ((this.state.send_box_1_area) && predictions[0]) {
+        
+            let box1midvalX = predictions[0].bbox[0] + (predictions[0].bbox[2] / 2)
+            let box1size = predictions[0].bbox[2] * predictions[0].bbox[3]
+            let box1_area_raw = box1size.toFixed()
+            const box_1_area = ((box1_area_raw / 10) /  this.state.box_1_area_att).toFixed()
+            const box_1_area_val = box_1_area > 127 ? 127 : box_1_area
+
+
+
+            this.setState({
+              box_1_area: box_1_area_val,
+              box_1_area_val: box1_area_raw,
+            })
 
             if (this.midiOutput && this.state.send_box_1_area) {
               // console.log('box_1_area: ', box_1_area_val)
@@ -264,49 +281,61 @@ class App extends React.Component {
             }
           }
 
-          if (predictions[1]) {
+          if ((this.state.send_box_2_x) && predictions[1]) {
             let box2midvalX = predictions[1].bbox[0] + (predictions[1].bbox[2] / 2)
-            let box2midvalY = predictions[1].bbox[1] + (predictions[1].bbox[3] / 2)
-            let box2size = predictions[1].bbox[2] * predictions[1].bbox[3]
 
             let box2Xpos = document.body.clientWidth * (box2midvalX / video.width)
-            let box2Ypos = document.body.clientHeight * (box2midvalY / video.height)
 
             const box_2_x = (box2Xpos /  this.state.box_2_x_att).toFixed();
-            const box_2_y = (box2Ypos /  this.state.box_1_y_att).toFixed();
-            const box_2_area = (box2size /  this.state.box_1_area_att).toFixed();
             let box1_x_raw = box2midvalX.toFixed()
-            let box1_y_raw = box2midvalY.toFixed()
-            let box1_area_raw = box2size.toFixed()
             const box_2_x_val =  box_2_x > 127 ? 127 : box_2_x
-            const box_2_y_val =  box_2_y > 127 ? 127 : box_2_y
-            const box_2_area_val = box_2_area > 127 ? 127 : box_2_area
 
             this.setState({
               box_2_x: box_2_x_val,
-              box_2_y: box_2_y_val,
-              box_2_area: box_2_area_val,
-              box_2_y_val: box1_y_raw,
               box_2_x_val: box1_x_raw,
-              box_2_area_val: box1_area_raw,
             })
 
             if (this.midiOutput && this.state.send_box_2_x) {
               // console.log('box_2_x: ', box_2_x_val)
               this.midiOutput.sendControlChange(4, box_2_x_val, "all");
             }
+          }
+
+          if ((this.state.send_box_2_y) && predictions[1]) {
+            let box2midvalY = predictions[1].bbox[1] + (predictions[1].bbox[3] / 2)
+            let box2Ypos = document.body.clientHeight * (box2midvalY / video.height)
+
+            const box_2_y = (box2Ypos /  this.state.box_1_y_att).toFixed();
+            let box1_y_raw = box2midvalY.toFixed()
+            const box_2_y_val =  box_2_y > 127 ? 127 : box_2_y
+
+            this.setState({
+              box_2_y: box_2_y_val,
+              box_2_y_val: box1_y_raw,
+            })
 
             if (this.midiOutput && this.state.send_box_2_y) {
               // console.log('box_2_y: ', box_2_y_val)
               this.midiOutput.sendControlChange(5, box_2_y_val, "all");
             }
+          }
+
+          if ((this.state.send_box_2_area) && predictions[1]) {
+            let box2size = predictions[1].bbox[2] * predictions[1].bbox[3]
+            const box_2_area = (box2size /  this.state.box_1_area_att).toFixed();
+            let box1_area_raw = box2size.toFixed()
+            const box_2_area_val = box_2_area > 127 ? 127 : box_2_area
+
+            this.setState({
+              box_2_area: box_2_area_val,
+              box_2_area_val: box1_area_raw,
+            })
 
             if (this.midiOutput && this.state.send_box_2_area) {
               // console.log('box_2_area: ', box_2_area_val)
               this.midiOutput.sendControlChange(6, box_2_area_val, "all");
             }
           }
-
 
           if (isVideo) {
               requestAnimationFrame(runDetection);
