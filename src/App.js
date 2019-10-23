@@ -13,7 +13,7 @@ import * as webmidi from "webmidi";
 // }
 
 const CheckBox = props => (
-  <input type="checkbox" {...props} />
+  <input type="checkbox" name={props.name} {...props} />
 )
 
 const ConfidenceRange = props => (
@@ -71,7 +71,7 @@ class App extends React.Component {
 
     this.modelParams = {
       flipHorizontal: true,   // flip e.g for video  
-      maxNumBoxes: 1,        // maximum number of boxes to detect
+      maxNumBoxes: 2,        // maximum number of boxes to detect
       iouThreshold: 0.5,      // ioU threshold for non-max suppression
       scoreThreshold: this.state.confidenceRange,    // confidence threshold for predictions.
     }
@@ -84,36 +84,15 @@ class App extends React.Component {
     
   }
 
-  handleBox1X = event => {
-    console.log('handleBox1X')
-    this.setState({send_box_1_x: event.target.checked})
-  }
+  handleChange = event => {
+    console.log('handleBox1X');
+    if(event.target.type === "checkbox") {
+      this.setState({[event.target.name]: !this.state[event.target.name]})
 
-  handleBox1Y = event => {
-    console.log('handleBox1Y')
-    this.setState({send_box_1_y: event.target.checked})
+    } else {
+        this.setState({[event.target.name]: parseInt(event.target.value)})
+    }
   }
-
-  handleBox1Area = event => {
-    console.log('handleBox1Area')
-    this.setState({send_box_1_area: event.target.checked})
-  }
-
-  handleBox2X = event => {
-    console.log('handleBox2X')
-    this.setState({send_box_2_x: event.target.checked})
-  }
-
-  handleBox2Y = event => {
-    console.log('handleBox2Y')
-    this.setState({send_box_2_y: event.target.checked})
-  }
-
-  handleBox2Area = event => {
-    console.log('handleBox2Area')
-    this.setState({send_box_2_area: event.target.checked})
-  }
-
 
   handleConfidenceRange = event => {
     this.setState({
@@ -127,48 +106,6 @@ class App extends React.Component {
       // detect objects in the image.
       this.model = lmodel
     });
-  }
-
-  handlebox1XAtt = event => {
-    this.setState({
-      box_1_x_att: parseInt(event.target.value)
-    })
-    console.log(this.state.box_1_x_att)
-  }
-
-  handlebox1YAtt = event => {
-    this.setState({
-      box_1_y_att: parseInt(event.target.value)
-    })
-    console.log(this.state.box_1_y_att)
-  }
-
-  handleBox1AreaAtt = event => {
-    this.setState({
-      box_1_area_att: parseInt(event.target.value)
-    })
-    console.log(this.state.box_1_area_att)
-  }
-
-  handleBox2XAtt = event => {
-    this.setState({
-      box_2_x_att: parseInt(event.target.value)
-    })
-    console.log(this.state.box_2_x_att)
-  }
-
-  handleBox2YAtt = event => {
-    this.setState({
-      box_2_y_att: parseInt(event.target.value)
-    })
-    console.log(this.state.box_2_y_att)
-  }
-
-  handleBox2AreaAtt = event => {
-    this.setState({
-      box_2_area_att: parseInt(event.target.value)
-    })
-    console.log(this.state.box_2_area_att)
   }
 
   componentDidMount(){
@@ -356,31 +293,32 @@ class App extends React.Component {
 
   render () {
     return(
-      <div className="App">
-      <div className="headerSpace">therimidi.js </div>
+    <div className="App">
+    <div className="headerSpace">therimidi.js </div>
     <div className="midiSelect">  Select Midi Device: {this.midiOutputs && <MidiSelect midioutputs={this.midiOutputs ? this.midiOutputs : null}/>}</div> 
       <div className={this.midiOutput ? "midiConnected" : "midiDisconnected"}> {this.midiOutput ? this.midiOutput.state : null} </div>
-      {/* <select name="midiInput">
-      {
-        this.state.midiDevices.map(device =>
-          <option value="Midiworks">{device}</option>
-        )
-      }
-    </select>       */}
       <div className="controls">
         <div className={this.state.send_box_1_x ? "paramControlon" : "paramControloff"}>
           <label>
-            <CheckBox 
+            <CheckBox
+              name="send_box_1_x" 
               className="checkbox"
-              checked={this.state.checked}
-              onChange={this.handleBox1X}
-              togglevalue='box_1_x'
+              checked={this.state.send_box_1_x}
+              onChange={this.handleChange}
+              togglevalue='send_box_1_x'
             />
-            <span>Box 1 X: <span className="boxVal"> {this.state.box_1_x_val} </span> / <TextInput className={this.state.send_box_1_x ? "attInputOn" : "attInputOff"} value={this.state.box_1_x_att} /> = {this.state.box_1_x} </span>
+            <span>
+                Box 1 X: 
+                <span className="boxVal"> 
+                  {this.state.box_1_x_val} 
+                </span> 
+                / <TextInput className={this.state.send_box_1_x ? "attInputOn" : "attInputOff"} value={this.state.box_1_x_att} /> = {this.state.box_1_x} 
+              </span>
           </label>
           <div className="attSliderContainer"> 
             Att: <AttRange 
-              onChange={this.handlebox1XAtt}
+              name="box_1_x_att" 
+              onChange={this.handleChange}
               className="confidenceRange"
               value={this.state.box_1_x_att}
             />
@@ -389,15 +327,17 @@ class App extends React.Component {
         <div className={this.state.send_box_1_y ? "paramControlon" : "paramControloff"}>
           <label>
             <CheckBox 
+              name="send_box_1_y" 
               className="checkbox"
-              checked={this.state.checked}
-              onChange={this.handleBox1Y}
+              checked={this.state.send_box_1_y}
+              onChange={this.handleChange}
             />
             <span>Box 1 Y: <span className="boxVal"> {this.state.box_1_y_val}  </span> / <TextInput className={this.state.send_box_1_y ? "attInputOn" : "attInputOff"} value={this.state.box_1_y_att} /> = {this.state.box_1_y} </span>
             </label>
             <div className="attSliderContainer"> 
               Att: <AttRange 
-              onChange={this.handlebox1YAtt}
+              name="box_1_y_att" 
+              onChange={this.handleChange}
               className="confidenceRange"
               id="confidenceRange"
               value={this.state.box_1_y_att}
@@ -407,15 +347,17 @@ class App extends React.Component {
           <div className={this.state.send_box_1_area ? "paramControlon" : "paramControloff"}>
             <label>
               <CheckBox 
+                name="send_box_1_area" 
                 className="checkbox"
-                checked={this.state.checked}
-                onChange={this.handleBox1Area}
+                checked={this.state.send_box_1_area}
+                onChange={this.handleChange}
               />
               <span>Box 1 Size: <span className="boxVal">  {this.state.box_1_area_val} </span> / <TextInput className={this.state.send_box_1_area ? "attInputOn" : "attInputOff"}  value={this.state.box_1_area_att} /> = {this.state.box_1_area} </span>
             </label>
           <div className="attSliderContainer"> 
             Att: <AttRange 
-              onChange={this.handleBox1AreaAtt}
+              name="box_1_area_att" 
+              onChange={this.handleChange}
               className="confidenceRange"
               id="confidenceRange"
               value={this.state.box_1_area_att}
@@ -425,15 +367,17 @@ class App extends React.Component {
         <div className={this.state.send_box_2_x ? "paramControlon" : "paramControloff"}>
           <label>
             <CheckBox 
+              name="send_box_2_x" 
               className="checkbox"
-              checked={this.state.checked}
-              onChange={this.handleBox2X}
+              checked={this.state.send_box_2_x}
+              onChange={this.handleChange}
             />
             <span>Box 2 X: <span className="boxVal">  {this.state.box_2_x_val}  </span> / <TextInput className={this.state.send_box_2_x ? "attInputOn" : "attInputOff"} value={this.state.box_2_x_att}/> = {this.state.box_2_x} </span>
           </label>
         <div className="attSliderContainer"> 
             Att: <AttRange 
-              onChange={this.handleBox2XAtt}
+              name="box_2_x_att" 
+              onChange={this.handleChange}
               className="confidenceRange"
               value={this.state.box_2_x_att}
             />
@@ -442,14 +386,16 @@ class App extends React.Component {
           <div className={this.state.send_box_2_y ? "paramControlon" : "paramControloff"}>
             <label>
               <CheckBox 
+                name="send_box_2_y" 
                 className="checkbox"
-                checked={this.state.checked}
-                onChange={this.handleBox2Y}
+                checked={this.state.send_box_2_y}
+                onChange={this.handleChange}
               />
               <span>Box 2 Y: <span className="boxVal">  {this.state.box_2_y_val} </span> / <TextInput className={this.state.send_box_2_y ? "attInputOn" : "attInputOff"} value={this.state.box_2_y_att}/> = {this.state.box_2_y} </span>
             </label>
           <div className="attSliderContainer"> 
             Att: <AttRange 
+              name="box_2_y_att" 
               onChange={this.handleBox2YAtt}
               className="confidenceRange"
               value={this.state.box_2_y_att}
@@ -459,15 +405,17 @@ class App extends React.Component {
         <div className={this.state.send_box_2_area ? "paramControlon" : "paramControloff"}>
           <label>
             <CheckBox 
+              name="send_box_2_area" 
               className="checkbox"
-              checked={this.state.checked}
-              onChange={this.handleBox2Area}
+              checked={this.state.send_box_2_area}
+              onChange={this.handleChange}
             />
             <span>Box 2 Size: <span className="boxVal">  {this.state.box_2_area_val}  </span> / <TextInput className={this.state.send_box_2_area ? "attInputOn" : "attInputOff"} value={this.state.box_2_area_att} /> =  {this.state.box_2_area} </span>
             </label>
             <div className="attSliderContainer"> 
             Att: <AttRange 
-              onChange={this.handleBox2AreaAtt}
+              name="box_2_area_att" 
+              onChange={this.handleChange}
               className="confidenceRange"
               value={this.state.box_2_area_att}
             />
@@ -478,6 +426,7 @@ class App extends React.Component {
             Confidence Range: {this.state.confidenceRange}
           <br />
           <ConfidenceRange 
+            name="confidenceRange" 
             onChange={this.handleConfidenceRange}
             className="paramControlon"
             id="confidenceRange"
