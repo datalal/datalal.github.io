@@ -2,8 +2,12 @@ import React from 'react';
 import './App.css';
 import * as handTrack from 'handtrackjs';
 import * as webmidi from "webmidi";
-// import taichi from './taichi_2.mp4';
-// import mime from './mime.mp4';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import InstructionsModal from "./components/InstructionsModal"
+
+import taichi from './taichi_2.mp4';
+import mime from './mime.mp4';
+import waving from './waving.mp4';
     
 // let modelParams = {
 //   flipHorizontal: true,   // flip e.g for video  
@@ -34,8 +38,23 @@ const MidiSelect = (props) => (
  </select>
 )
 
+const HandSelect = (props) => (
+  <select name="handSelect" {...props} >
+    <option key={1} value={1}>1</option>
+    <option key={2} value={2}>2</option>
+ </select>
+)
+
+const VideoSourceSelect = (props) => (
+  <select name="videoSourceSelect" {...props} >
+    <option key={1} defaultValue value="camera"> camera</option>
+    <option key={2} value="file">Video File</option>
+ </select>
+)
+
 class App extends React.Component {
   constructor(props) {
+
     super(props)
     this.model = null;
 
@@ -65,13 +84,17 @@ class App extends React.Component {
       box_2_x_calc: 0,
       box_2_area_calc: 0,
       confidenceRange: 0.6,
-      midiDevices: []
+      midiDevices: [],
+      maxNumBoxes:1,
+      showModal: false,
+      setModalShow: false,
+      videoSource: "file",
     }
 
 
     this.modelParams = {
       flipHorizontal: true,   // flip e.g for video  
-      maxNumBoxes: 2,        // maximum number of boxes to detect
+      maxNumBoxes: this.state.numberOfHands,        // maximum number of boxes to detect
       iouThreshold: 0.5,      // ioU threshold for non-max suppression
       scoreThreshold: this.state.confidenceRange,    // confidence threshold for predictions.
     }
@@ -94,21 +117,47 @@ class App extends React.Component {
     }
   }
 
-  handleConfidenceRange = event => {
+  handleModelChange = event => {
+    console.log(event.target.value)
+
     this.setState({
-      confidenceRange: parseFloat(event.target.value)
+      [event.target.name]: event.target.value
+    }, () => {
+      this.modelParams = {
+        ...this.modelParams, 
+        maxNumBoxes: this.state.maxNumBoxes,
+        scoreThreshold: parseFloat(this.state.confidenceRange)
+      }
+      console.log(this.modelParams)
+      handTrack.load(this.modelParams).then(lmodel => {
+        console.log("modelREloaded")
+        // detect objects in the image.
+        this.model = lmodel
+      })
     })
-    this.modelParams = {...this.modelParams, scoreThreshold: parseFloat(this.state.confidenceRange)}
-    console.log(this.modelParams)
-    // Load the model.
-    handTrack.load(this.modelParams).then(lmodel => {
-      console.log("modelREloaded")
-      // detect objects in the image.
-      this.model = lmodel
-    });
+    // this.modelParams = {...this.modelParams, maxNumBoxes: this.state.numberOfHands}
+    // Reload the model.
+  }
+
+  handleVideoSourceChange = event => {
+    console.log("handleVideoSourceChange")
+    console.log(event.target.value)
+    this.setState({
+      videoSource: event.target.value
+    })
+  }
+
+  handleVideoFile = file => {
+    console.log(file)
+    const fr = new FileReader();
+    fr.readAsDataURL(file)
+    console.log(fr.result)
+    this.newVideo = fr.result
+    console.log(this.newVideo)
   }
 
   componentDidMount(){
+    console.log("COMPONENT DID MOUNT")
     const video = document.getElementById("myvideo");
     const canvas = document.getElementById("canvas");
     const context = canvas.getContext("2d");
@@ -149,6 +198,7 @@ class App extends React.Component {
           } else {
           }
       });
+
     }
     
     const runDetection = () => {
@@ -274,7 +324,7 @@ class App extends React.Component {
             }
           }
 
-          if (isVideo) {
+          if (isVideo || this.state.videoSource === "file") {
               requestAnimationFrame(runDetection);
           }
       });
@@ -285,16 +335,32 @@ class App extends React.Component {
       // detect objects in the image.
       this.model = lmodel
       console.log('loaded model');
-      // runDetection()
-
-      startVideo();
+      
+      if (this.state.videoSource === "file"){
+        runDetection()
+      } else {
+        startVideo();
+      }
     });
   }
 
+  setModalShow = showModal => {
+    this.setState({
+      showModal: showModal,
+      setShowModal: showModal
+    })
+  }
+
   render () {
+    console.log(this.state)
     return(
     <div className="App">
     <div className="headerSpace">therimidi.js </div>
+    <div className="instructions" onClick={() => this.setModalShow(true)}>Instructions </div>
+    <InstructionsModal
+        show={this.state.showModal}
+        onHide={() => this.setModalShow(false)}
+    />
     <div className="midiSelect">  Select Midi Device: {this.midiOutputs && <MidiSelect midioutputs={this.midiOutputs ? this.midiOutputs : null}/>}</div> 
       <div className={this.midiOutput ? "midiConnected" : "midiDisconnected"}> {this.midiOutput ? this.midiOutput.state : null} </div>
       <div className="controls">
@@ -316,7 +382,7 @@ class App extends React.Component {
               </span>
           </label>
           <div className="attSliderContainer"> 
-            Att: <AttRange 
+            ctrl: <AttRange 
               name="box_1_x_att" 
               onChange={this.handleChange}
               className="confidenceRange"
@@ -335,7 +401,7 @@ class App extends React.Component {
             <span>Box 1 Y: <span className="boxVal"> {this.state.box_1_y_val}  </span> / <TextInput className={this.state.send_box_1_y ? "attInputOn" : "attInputOff"} value={this.state.box_1_y_att} /> = {this.state.box_1_y} </span>
             </label>
             <div className="attSliderContainer"> 
-              Att: <AttRange 
+              ctrl: <AttRange 
               name="box_1_y_att" 
               onChange={this.handleChange}
               className="confidenceRange"
@@ -355,7 +421,7 @@ class App extends React.Component {
               <span>Box 1 Size: <span className="boxVal">  {this.state.box_1_area_val} </span> / <TextInput className={this.state.send_box_1_area ? "attInputOn" : "attInputOff"}  value={this.state.box_1_area_att} /> = {this.state.box_1_area} </span>
             </label>
           <div className="attSliderContainer"> 
-            Att: <AttRange 
+            ctrl: <AttRange 
               name="box_1_area_att" 
               onChange={this.handleChange}
               className="confidenceRange"
@@ -375,7 +441,7 @@ class App extends React.Component {
             <span>Box 2 X: <span className="boxVal">  {this.state.box_2_x_val}  </span> / <TextInput className={this.state.send_box_2_x ? "attInputOn" : "attInputOff"} value={this.state.box_2_x_att}/> = {this.state.box_2_x} </span>
           </label>
         <div className="attSliderContainer"> 
-            Att: <AttRange 
+            ctrl: <AttRange 
               name="box_2_x_att" 
               onChange={this.handleChange}
               className="confidenceRange"
@@ -394,9 +460,9 @@ class App extends React.Component {
               <span>Box 2 Y: <span className="boxVal">  {this.state.box_2_y_val} </span> / <TextInput className={this.state.send_box_2_y ? "attInputOn" : "attInputOff"} value={this.state.box_2_y_att}/> = {this.state.box_2_y} </span>
             </label>
           <div className="attSliderContainer"> 
-            Att: <AttRange 
+            ctrl: <AttRange 
               name="box_2_y_att" 
-              onChange={this.handleBox2YAtt}
+              onChange={this.handleChange}
               className="confidenceRange"
               value={this.state.box_2_y_att}
             />
@@ -413,7 +479,7 @@ class App extends React.Component {
             <span>Box 2 Size: <span className="boxVal">  {this.state.box_2_area_val}  </span> / <TextInput className={this.state.send_box_2_area ? "attInputOn" : "attInputOff"} value={this.state.box_2_area_att} /> =  {this.state.box_2_area} </span>
             </label>
             <div className="attSliderContainer"> 
-            Att: <AttRange 
+            ctrl: <AttRange 
               name="box_2_area_att" 
               onChange={this.handleChange}
               className="confidenceRange"
@@ -423,11 +489,20 @@ class App extends React.Component {
           </div>
           <br />
         <div className="confidenceRangeContainer">
+          <div className="midiSelect">  Video Source: {<VideoSourceSelect videoSource={this.state.videoSource} name="videoSourceSelect" onChange={this.handleVideoSourceChange}/>}</div> 
+          { this.state.videoSource === "file" &&
+            <input type="file"
+              id="file"
+              accept=".mp4"
+              onChange={event => this.handleVideoFile(event.target.files[0])}
+            />
+          }
+          <div className="midiSelect">  Number of Hands: {<HandSelect name="maxNumBoxes" onChange={this.handleModelChange}/>}</div> 
             Confidence Range: {this.state.confidenceRange}
           <br />
           <ConfidenceRange 
             name="confidenceRange" 
-            onChange={this.handleConfidenceRange}
+            onChange={this.handleModelChange}
             className="paramControlon"
             id="confidenceRange"
             value={this.state.confidenceRange}
@@ -435,18 +510,31 @@ class App extends React.Component {
         </div>
         </div>
         <br />
+        <br />
+        <br />
           <canvas id="canvas" className="border canvasbox"></canvas>
           <br />
-          <video
-            controls
-            autoPlay 
-            width="640"
-            height="640"
-            className="videobox canvasboxHidden" 
-            id="myvideo"
-          />
-            {/* <source src={mime} type="video/mp4" /> */}
-          {/* </video> */}
+          { this.state.videoSource === "camera" ?
+              <video
+                controls
+                autoPlay 
+                width="640"
+                height="640"
+                className="videobox canvasboxHidden" 
+                id="myvideo"
+              /> :
+              <video
+                autoPlay
+                width="640"
+                height="640"
+                className="videobox canvasboxHidden" 
+                id="myvideo"
+                loop
+                muted
+            > 
+              <source src={waving} type="video/mp4" />
+            </video>
+          }
       </div>
     )
   }

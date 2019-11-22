@@ -219,7 +219,18 @@ input[type=range]::-ms-track  {
 
 .boxVal {
   border-bottom: 1px solid grey;
-  width: 10px;
-  padding-left: 40px;
+  width: 90px;
+  padding-left: 10px;
+  padding-right: 10px;
   margin-right: 10px;
+}
+
+.instructions {
+  color: grey;
+
+}
+
+.modalStyle {
+  background-color: black;
+  color: grey;
 }
