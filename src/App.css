@@ -144,18 +144,18 @@ input[type=checkbox]:focus  {
 
 
 .checkbox:checked {
-  background-color: black;
+  background-color: white;
   color: black;
   border: 1px solid grey;
 }
 
-.checkbox:checked:after {
-  content: '\2714';
-  font-size: 11px;
+/* .checkbox:checked {
+  background-color: grey;
+  font-size: 15px;
   top: 0;
   left: 3px;
   color: grey;
-}
+} */
 
 .checkbox {
   border: 1px solid grey;
@@ -176,7 +176,7 @@ input[type=range]::-webkit-slider-thumb  {
   align-self: center;
   margin-top: -5px;
   cursor: -webkit-grab;
-  /* box-shadow: 2px 2px 2px #ffffff, 2px 2px 2px #ffffff; */
+  box-shadow: 2px 2px 2px #fffbfb, 2px 2px 2px #fffbfb;
 }
 
 input[type=range]::-webkit-slider-runnable-track  {

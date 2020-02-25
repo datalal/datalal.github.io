@@ -4,10 +4,6 @@ import * as handTrack from 'handtrackjs';
 import * as webmidi from "webmidi";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import InstructionsModal from "./components/InstructionsModal"
-
-import taichi from './taichi_2.mp4';
-import mime from './mime.mp4';
-import waving from './waving.mp4';
     
 const CheckBox = props => (
   <input type="checkbox" name={props.name} {...props} />
@@ -105,7 +101,7 @@ class App extends React.Component {
       showModal: false,
       setModalShow: false,
       videoSource: "file",
-      videoSourceFile: mime,
+      videoSourceFile: null,
       video: null,
       canvas: null,
       context: null,
@@ -158,12 +154,13 @@ class App extends React.Component {
     this.setState({
       videoSource: event.target.value
     })
-    console.log(this.state.videoSource)
     if (event.target.value === "file") {
       console.log("aboutto.stopVideo()")
       this.stopVideo()
     }
-    this.loadTheModel()
+    if (event.target.value === "camera") {
+      this.loadTheModel()
+    }
   }
 
   handleVideoFile = file => {
@@ -176,7 +173,12 @@ class App extends React.Component {
         videoSourceFile: imageURI
       }, () => {
         // console.log(this.state.videoSourceFile)
+        // fr.readAsDataURL(file)
+
         this.state.video.load()
+        console.log("load")
+        console.log(this.state)
+        this.loadTheModel()
 
       })
       // console.log(imageURI)
@@ -188,7 +190,14 @@ class App extends React.Component {
     // console.log(fr.results)
     // console.log(imageURI)
     this.newVideo = fr.result
-    // console.log(this.newVideo)
+    console.log(this.newVideo)
+    console.log(this.state.videoSourceFile)
+
+    if (this.newVideo) {
+      this.loadTheModel()
+      console.log(this.state.videoSourceFile)
+    }
+
   }
 
   startVideo = () => {
@@ -213,7 +222,7 @@ class App extends React.Component {
     handTrack.stopVideo(video).then(function (status) {
         console.log("video cam stopped", status);
     });
-    // this.loadTheModel()
+    this.loadTheModel()
   }
 
   runDetection = () => {
@@ -426,7 +435,7 @@ class App extends React.Component {
   }
 
   render () {
-    console.log(this.state)
+    // console.log(this.state)
     return(
     <div className="App">
     <div className="headerSpace">therimidi.js </div>
@@ -444,7 +453,7 @@ class App extends React.Component {
               className="checkbox"
               checked={this.state.send_box_1_x}
               onChange={this.handleChange}
-              togglevalue='send_box_1_x'
+              // togglevalue='send_box_1_x'
             />
             <span> Box 1 X: {this.state.box_1_x_val} / {this.state.box_1_x_att} = {this.state.box_1_x} </span>
           <div className="attSliderContainer"> 
@@ -470,7 +479,7 @@ class App extends React.Component {
               name="box_1_y_att" 
               onChange={this.handleChange}
               className="confidenceRange"
-              id="confidenceRange"
+              // id="confidenceRange"
               value={this.state.box_1_y_att}
             />
           </div>
@@ -489,7 +498,7 @@ class App extends React.Component {
               name="box_1_area_att" 
               onChange={this.handleChange}
               className="confidenceRange"
-              id="confidenceRange"
+              // id="confidenceRange"
               value={this.state.box_1_area_att}
             />
           </div>
@@ -548,7 +557,7 @@ class App extends React.Component {
           </div>
           <br />
         <div className="confidenceRangeContainer">
-          <div className="midiSelect">  Video Source: {<VideoSourceSelect videosource={this.state.videoSource} name="videoSourceSelect" onChange={this.handleVideoSourceChange}/>}</div> 
+          <div className="midiSelect">  Video Source: {<VideoSourceSelect value={this.state.videoSource} videosource={this.state.videoSource} name="videoSourceSelect" onChange={this.handleVideoSourceChange}/>}</div> 
           { this.state.videoSource === "file" &&
             <input type="file"
               id="file"
@@ -562,7 +571,7 @@ class App extends React.Component {
           <ConfidenceRange 
             name="confidenceRange" 
             onChange={this.handleModelChange}
-            className="paramControlon"
+            className="confidenceRange"
             id="confidenceRange"
             value={this.state.confidenceRange}
           />
