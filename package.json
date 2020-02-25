@@ -4,22 +4,22 @@
   "private": true,
   "homepage": "https://datalal.github.io",
   "dependencies": {
-    "bootstrap": "^4.3.1",
+    "bootstrap": "^4.4.1",
     "gh-pages": "^2.2.0",
     "handtrackjs": "0.0.13",
-    "react": "^16.8.6",
-    "react-bootstrap": "^1.0.0-beta.14",
-    "react-dom": "^16.8.6",
+    "react": "^16.12.0",
+    "react-bootstrap": "^1.0.0-beta.16",
+    "react-dom": "^16.12.0",
     "react-scripts": "3.0.1",
-    "webmidi": "^2.3.3"
+    "webmidi": "^2.5.1"
   },
   "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
